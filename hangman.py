@@ -1,181 +1,66 @@
-#!/usr/bin/env python
-# coding: utf-8
+# Pseudo Instructions - to guide development only 
+# array of words
+# upto 5 incorrect guesses
+# take user input
+# hide letters with *
+# show letters correctly guessed
+# show list of guessed letters
+# show how many guesses remain
 
-# In[1]:
+from random import randint
 
+word_bank = ["Middlesbrough", "Hartlepool"]
 
-import numpy as np
-import random
+def start_new_game():
+    guesses_remaining = 5
+    guesses = {"",}
+    hangman_word = get_hangman_word()
+    game_in_play(hangman_word, guesses_remaining, guesses)
 
+def get_hangman_word():
+    cap = word_bank[randint(0,(len(word_bank)-1))].upper()
+    return cap
 
-# In[2]:
+def game_in_play(hangman_word, guesses_remaining, guesses):
+    while True:
+        print(f"\n\t==========\nChances remaining: {guesses_remaining}")
+        if(not guesses_remaining):
+            print("\nNo Chances Remaining - GAME OVER!\n\t==========\n")
+            break
 
+        print("\nEnter a single letter:")
+        guess = input()
+        guess = guess.upper()
 
-words = ['python','army reserve','great britain','machine learning','coding','middlesbrough']
-
-
-# In[3]:
-
-
-def getRandomWord():
-    return random.choice(words)
-
-
-# In[4]:
-
-
-def nextRound(game):
-    print('Letters used: ', game['guessed'])
-
-    temp = ''
-    for i in game['wordIs']:
-        if(i == ' '):
-            temp += i
+        if guess in guesses:
+            print(f"Oops! You've used '{guess}' already. Try again (no pts deducted).")
             continue
-        if(i not in game['guessed']):
-            temp += '*'
+        elif len(guess) > 1 or not(guess.isalpha()):
+            print("Oops! I only accept a single valid alphabetic character.\n\nTry again.\n")
+            continue
+        elif guess not in guesses:
+            guesses.add(guess)
+            word = masked_word(hangman_word, guesses)            
+            
+            if(guess not in hangman_word):
+                guesses_remaining -= 1
+                continue
+
+            if("*" not in word):
+                print(f"\n\t==========\nCongrats! You've smashed it. The word is: {word}\n\n")
+                break
+            else:
+                print(f"\n\nWell done! You're getting closer and the current masked word is: {word}\n")
         else:
-            temp += i
-    print('\nWord state is currently: ',temp)
-    letterCheck = input("\n\t\tPlease Enter your next letter guess...\n\n")
-    while(letterCheck not in 'qwertyuiopasdfghjklzxcvbnm' or letterCheck in game['guessed']):
-          letterCheck = input("\n\t\tPlease enter ONLY letters you've not used before...\n\n")
-    game['guessed'] += letterCheck
-    temp2 = wordState(game)
-    if('*' in temp2 and temp2.count('*') < temp.count('*')):
-        print('Correct! Keep it up.')
-        game['flag'] = True
-        drawHangman(game)
-    elif('*' not in temp2):
-        print('CONGRATULATIONS! YOU SAVED THE STICKMAN!')
-        cont = input('\n\tDO YOU WANT TO PLAY AGAIN? PRESS 1 TO PLAY  AGAIN... PRESS ANYOTHER KEY TO EXIT.')
-        if(cont == '1'):
-            startGame()
-    else:
-        game['attempts'] += 1
-        game['flag'] = False
-        drawHangman(game)
-    
-        
+            print("Oops! I only accept a single valid alphabetic character.\n\nTry again.\n")
 
-
-# In[5]:
-
-
-def startGame():
-    game = {'wordIs' : '','attempts': 0,'guessed': '', 'flag':True}
-    game['wordIs'] = getRandomWord()
-    nextRound(game)
-
-
-# In[6]:
-
-
-def wordState(game):
-    mask = ''
-    for i in game['wordIs']:
-        if(i == ' '):
-            mask += i
-        elif(i in game['guessed']):
-            mask += i
+def masked_word(word, guesses):
+    masked = ""
+    for character in word:
+        if({character} & guesses):
+            masked += character
         else:
-            mask += '*'
-    return mask
+            masked += "*"
+    return masked
 
-
-# In[7]:
-
-
-def drawHangman(game):
-    HANGMANPICS = ["""
-      +---+
-      |   |
-          |
-          |
-          |
-          |
-    =========""", """
-      +---+
-      |   |
-      O   |
-          |
-          |
-          |
-    =========""", """
-      +---+
-      |   |
-      O   |
-      |   |
-          |
-          |
-    =========""", """
-      +---+
-      |   |
-      O   |
-     /|   |
-          |
-          |
-    =========""", """
-      +---+
-      |   |
-      O   |
-     /|\  |
-          |
-          |
-    =========""", """
-      +---+
-      |   |
-      O   |
-     /|\  |
-     /    |
-          |
-    =========""", """
-      +---+
-      |   |
-      O   |
-     /|\  |
-     / \  |
-          |
-    ========="""]
-
-    if(game['attempts'] == 7):
-        print('Uh-oh! Game Over')
-        print('The word was:',game['wordIs'])
-        cont = input('DO YOU WANT TO PLAY AGAIN? PRESS 1 TO PLAY  AGAIN... PRESS ANYOTHER KEY TO EXIT.')
-        if(cont == '1'):
-            startGame()
-    elif(game['attempts'] == 0):
-        print(HANGMANPICS[game['attempts']])
-        nextRound(game)
-    elif(game['flag'] == False):
-        unluckyList = ['Ouch! not quiet, ','Oh so close! ','Seriously!? ','Unlucky, ']
-        encouragementList = ['keep trying','you can do it!','you know what to guess next']
-        print(random.choice(unluckyList), random.choice(encouragementList))
-        print(game['guessed'])
-        game['flag'] = True
-        if(game['attempts'] < 7):
-            print(HANGMANPICS[game['attempts']])
-        nextRound(game)        
-    else:
-        print(HANGMANPICS[game['attempts']])
-        print(game['guessed'])
-        nextRound(game)      
-
-
-# In[ ]:
-
-
-startGame()
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
+start_new_game()
